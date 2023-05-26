@@ -5,11 +5,10 @@ import demo.assignment.tree.statementsvc.model.mappers.StatementMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 
 @Repository
-public class SimpleStatementRepository implements StatementRepository{
+public class JDBCStatementRepository implements StatementRepository{
 
     private final String searchStatements = "select s.account_id , s.datefield , s. ID , " +
             "s.amount from statement s,account a" +
@@ -18,12 +17,13 @@ public class SimpleStatementRepository implements StatementRepository{
     @Autowired
     private final JdbcTemplate jdbcTemplate ;
 
-    public SimpleStatementRepository(JdbcTemplate jdbcTemplate) {
+    public JDBCStatementRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+
     @Override
-    public List<Statement> getStatementsBySearchCriteria(String accountId) {
+    public List<Statement> getStatementsBySearchCriteria(int accountId) {
         return jdbcTemplate.query(searchStatements, new StatementMapper() , accountId);
 
     }

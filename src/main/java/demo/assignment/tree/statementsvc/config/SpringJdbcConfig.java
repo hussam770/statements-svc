@@ -6,6 +6,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
 import java.io.File;
+import java.util.Objects;
 
 @Configuration
 public class SpringJdbcConfig {
@@ -14,15 +15,13 @@ public class SpringJdbcConfig {
     public DataSource mysqlDataSource() {
         ClassLoader classLoader = getClass().getClassLoader();
         final File dbFileName = new
-                File(classLoader.getResource("accountsdb.accdb").getFile());
+                File(Objects.requireNonNull(classLoader.getResource("accountsdb.accdb")).getFile());
 
         final String jdbcUrl = "jdbc:ucanaccess://" + dbFileName +  ";openExclusive=false;ignoreCase=true";
 
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("net.ucanaccess.jdbc.UcanaccessDriver");
         dataSource.setUrl(jdbcUrl);
-        //dataSource.setUsername("guest_user");
-        //dataSource.setPassword("guest_password");
 
         return dataSource;
     }
