@@ -1,0 +1,102 @@
+{
+	"info": {
+		"_postman_id": "90fa01c1-5c8c-4c8a-9a9b-3757a1cbb1ad",
+		"name": "statement-svc",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "8970821"
+	},
+	"item": [
+		{
+			"name": "find-statements",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "user",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "user",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/v1/statements/find/3?fromDate=2020-05-12&toDate=2020-12-12&fromAmount=500&toAmount=560",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"v1",
+						"statements",
+						"find",
+						"3"
+					],
+					"query": [
+						{
+							"key": "fromDate",
+							"value": "2020-05-12"
+						},
+						{
+							"key": "toDate",
+							"value": "2020-12-12"
+						},
+						{
+							"key": "fromAmount",
+							"value": "500"
+						},
+						{
+							"key": "toAmount",
+							"value": "560"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "admin",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8080/tree/api/v1/secureLogin",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"tree",
+						"api",
+						"v1",
+						"secureLogin"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

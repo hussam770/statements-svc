@@ -78,6 +78,7 @@ class StatementSvcServiceTests {
 
         final var statementList = statementService.searchStatements(3, searchCriteria);
         log.debug("statements account only size are : {}", statementList.size());
+        log.debug("the statements are : {}", statementList.size());
         assertNotNull(statementList);
     }
 
