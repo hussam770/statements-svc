@@ -17,7 +17,7 @@ public class SpringJdbcConfig {
         final File dbFileName = new
                 File(Objects.requireNonNull(classLoader.getResource("accountsdb.accdb")).getFile());
 
-        final String jdbcUrl = "jdbc:ucanaccess://" + dbFileName +  ";openExclusive=false;ignoreCase=true";
+        final String jdbcUrl = "jdbc:ucanaccess://" + dbFileName + ";openExclusive=false;ignoreCase=true";
 
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("net.ucanaccess.jdbc.UcanaccessDriver");

@@ -9,8 +9,8 @@ import java.time.LocalDate;
 @Data
 public class Statement {
 
-    private Integer Id ;
-    private Double accountId ;
-    private LocalDate date ;
-    private String Amount ;
+    private Integer id;
+    private Double accountId;
+    private LocalDate date;
+    private Double amount;
 }

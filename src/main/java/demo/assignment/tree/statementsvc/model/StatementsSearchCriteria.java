@@ -9,11 +9,11 @@ import java.time.LocalDate;
 @Data
 @Builder(setterPrefix = "set")
 public class StatementsSearchCriteria {
-    private Integer accountId ;
-    private Long fromAmount ;
-    private Long toAmount ;
-    private LocalDate fromDate ;
-    private LocalDate toDate ;
+    private Integer accountId;
+    private Double fromAmount;
+    private Double toAmount;
+    private LocalDate fromDate;
+    private LocalDate toDate;
 
 }
 

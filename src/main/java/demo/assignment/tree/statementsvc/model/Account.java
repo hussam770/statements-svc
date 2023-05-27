@@ -7,7 +7,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class Account {
 
-    private Integer Id ;
-    private String accountType ;
-    private String accountNumber ;
+    private Integer id;
+    private String accountType;
+    private String accountNumber;
 }

@@ -7,6 +7,7 @@ import demo.assignment.tree.statementsvc.repo.StatementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,71 +15,75 @@ import java.util.stream.Collectors;
 public class StatementService {
 
     @Autowired
-    private final StatementRepository statementRepository ;
+    private final StatementRepository statementRepository;
 
     public StatementService(StatementRepository statementRepository) {
         this.statementRepository = statementRepository;
     }
 
-    public List<Statement> SearchStatements(int accountId , StatementsSearchCriteria searchCriteria){
+    public List<Statement> searchStatements(int accountId, StatementsSearchCriteria searchCriteria) {
 
         validateSearchCriteria(searchCriteria);
         List<Statement> statementsList = statementRepository
                 .getStatementsBySearchCriteria(accountId);
 
-        return filterBySearchCriteria(statementsList , searchCriteria) ;
+        return filterBySearchCriteria(statementsList, searchCriteria);
     }
 
-    public void validateSearchCriteria(StatementsSearchCriteria searchCriteria){
+    private void validateSearchCriteria(StatementsSearchCriteria searchCriteria) {
         // validate user input - conflict
-        if((searchCriteria.getFromDate() != null && searchCriteria.getToDate() == null)
+        if ((searchCriteria.getFromDate() != null && searchCriteria.getToDate() == null)
                 || searchCriteria.getFromDate() == null && searchCriteria.getToDate() != null)
-            throw new IllegalArgumentException("Missing params, could not perform search with current search criteria..") ;
+            throw new IllegalArgumentException("Missing params, could not perform search with current search criteria..");
 
-        if((searchCriteria.getFromAmount() != null && searchCriteria.getToAmount() == null)
+        if ((searchCriteria.getFromAmount() != null && searchCriteria.getToAmount() == null)
                 || searchCriteria.getFromAmount() == null && searchCriteria.getToAmount() != null)
-            throw new IllegalArgumentException("Missing params, could not perform search with current search criteria ..") ;
+            throw new IllegalArgumentException("Missing params, could not perform search with current search criteria ..");
 
-        if((searchCriteria.getFromDate() != null && searchCriteria.getFromDate().isAfter(searchCriteria.getToDate())))
-            throw new IllegalArgumentException("The from date param could not be after the to date ..") ;
+        if ((searchCriteria.getFromDate() != null && searchCriteria.getFromDate().isAfter(searchCriteria.getToDate())))
+            throw new IllegalArgumentException("The from date param could not be after the to date ..");
 
-        if((searchCriteria.getFromAmount() != null && searchCriteria.getFromAmount() > searchCriteria.getToAmount()))
-            throw new IllegalArgumentException("The from amount param could not be larger than to amount .. ") ;
+        if ((searchCriteria.getFromAmount() != null && searchCriteria.getFromAmount() > searchCriteria.getToAmount()))
+            throw new IllegalArgumentException("The from amount param could not be larger than to amount .. ");
     }
 
-    private SearchType defineSearchCriteria (StatementsSearchCriteria statementsSearchCriteria) {
-
-        if(statementsSearchCriteria.getFromDate() == null && statementsSearchCriteria.getFromAmount() == null)
-            return SearchType.ACCOUNT_ONLY ;
-        else if(statementsSearchCriteria.getFromDate() != null && statementsSearchCriteria.getFromAmount() != null)
-            return SearchType.AMOUNT_DATE ;
-        else if(statementsSearchCriteria.getFromDate() != null)
-            return SearchType.DATE ;
-        else return SearchType.AMOUNT;
-    }
-
-    private List<Statement> filterBySearchCriteria(List<Statement> statementList , StatementsSearchCriteria searchCriteria){
+    private List<Statement> filterBySearchCriteria(List<Statement> statementList, StatementsSearchCriteria searchCriteria) {
         final var searchType = defineSearchCriteria(searchCriteria);
         return statementList.stream()
-                .filter(s -> this.filterBySearchCriteria(s,searchCriteria ,searchType))
+                .filter(s -> this.filterBySearchCriteria(s, searchCriteria, searchType))
                 .collect(Collectors.toList());
     }
 
-    private boolean filterBySearchCriteria(Statement item, StatementsSearchCriteria searchCriteria, SearchType searchType){
-        switch (searchType){
-            case ACCOUNT_ONLY : return true;
-            case AMOUNT_DATE : return (item.getDate().isAfter(searchCriteria.getFromDate())
-                    && (item.getDate().isBefore(searchCriteria.getToDate()) ))
-                    && (Long.parseLong(item.getAmount()) > searchCriteria.getFromAmount())
-                    && (Long.parseLong(item.getAmount()) < searchCriteria.getToAmount());
+    private boolean filterBySearchCriteria(Statement item, StatementsSearchCriteria searchCriteria, SearchType searchType) {
+        switch (searchType) {
+            case ACCOUNT_ONLY:
+                return (item.getDate().isAfter(LocalDate.now().minusMonths(3)));
+            case AMOUNT_DATE:
+                return (item.getDate().isAfter(searchCriteria.getFromDate())
+                        && (item.getDate().isBefore(searchCriteria.getToDate())))
+                        && (item.getAmount() > searchCriteria.getFromAmount())
+                        && (item.getAmount() < searchCriteria.getToAmount());
 
-            case DATE: return (item.getDate().isAfter(searchCriteria.getFromDate())
-                    && (item.getDate().isBefore(searchCriteria.getToDate()) ));
+            case DATE:
+                return (item.getDate().isAfter(searchCriteria.getFromDate())
+                        && (item.getDate().isBefore(searchCriteria.getToDate())));
 
-            case AMOUNT: return (Long.parseLong(item.getAmount()) > searchCriteria.getFromAmount())
-                    && (Long.parseLong(item.getAmount()) < searchCriteria.getToAmount()) ;
+            case AMOUNT:
+                return (item.getAmount() > searchCriteria.getFromAmount())
+                        && (item.getAmount() < searchCriteria.getToAmount());
         }
-        throw new IllegalArgumentException("Something went wrong, please try later ..") ;
+        throw new IllegalArgumentException("Something went wrong, please try later ..");
+    }
+
+    private SearchType defineSearchCriteria(StatementsSearchCriteria statementsSearchCriteria) {
+
+        if (statementsSearchCriteria.getFromDate() == null && statementsSearchCriteria.getFromAmount() == null)
+            return SearchType.ACCOUNT_ONLY;
+        else if (statementsSearchCriteria.getFromDate() != null && statementsSearchCriteria.getFromAmount() != null)
+            return SearchType.AMOUNT_DATE;
+        else if (statementsSearchCriteria.getFromDate() != null)
+            return SearchType.DATE;
+        else return SearchType.AMOUNT;
     }
 
 }
