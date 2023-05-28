@@ -7,7 +7,8 @@
 * If you have sonarqube execute the command - mvn sonar:sonar -Dsonar.host.url=http://[sonar-host]:9000    -Dsonar.token=[yourtoken]
 * The sonar report is in sonar-qube folder 
 * The code coverage report is in code-coverage-reports folder
-* Import the postman collection in the postman-collection folder to execute the api 
+* Import the postman collection in the postman-collection folder to execute the api
+* Copy the Authorization token from the login response header and paste if in the Authorization header request
 
 # Getting Started
 
