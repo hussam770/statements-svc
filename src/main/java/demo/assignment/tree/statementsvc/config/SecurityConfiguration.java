@@ -58,9 +58,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .addFilter(new JwtAuthenticationFilter(authenticationManager() , jwtConfig))
+                .addFilter(new JwtAuthenticationFilter(authenticationManager() , jwtConfig, userManagementService))
                 .addFilterAfter(new JwtTokenVerifierFilter(jwtConfig, userManagementService) ,JwtAuthenticationFilter.class )
                 .authorizeRequests()
+                .antMatchers("/v1/statements/find/*").hasRole("ADMIN")
                 .anyRequest()
                 .authenticated();
     }

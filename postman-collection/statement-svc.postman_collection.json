@@ -9,31 +9,23 @@
 		{
 			"name": "find-statements",
 			"request": {
-				"auth": {
-					"type": "basic",
-					"basic": [
-						{
-							"key": "password",
-							"value": "user",
-							"type": "string"
-						},
-						{
-							"key": "username",
-							"value": "user",
-							"type": "string"
-						}
-					]
-				},
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "BearereyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodXNzYW0iLCJhdWQiOiJjdXN0b21lciIsInN1YiI6ImFkbWluIiwianRpIjoiNTUyZDQzMDItYjc5MC00ZWFiLTg2ZDMtZjdiODZjODQ2ZWFkIiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IlJPTEVfQURNSU4ifSx7ImF1dGhvcml0eSI6IlJPTEVfVVNFUiJ9XSwiZXhwIjoxNjg1MjgzOTU1fQ.FbUHR8fkToSGIPVklXajGWxRLo0_CYQ_IcJ1cvuTRr0",
+						"type": "text"
+					}
+				],
 				"url": {
-					"raw": "http://localhost:8080/v1/statements/find/3?fromDate=2020-05-12&toDate=2020-12-12&fromAmount=500&toAmount=560",
+					"raw": "http://localhost:8080/tree/v1/statements/find/3?fromDate=2020-05-12&toDate=2020-12-12&fromAmount=500&toAmount=560",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"tree",
 						"v1",
 						"statements",
 						"find",
@@ -62,24 +54,47 @@
 			"response": []
 		},
 		{
+			"name": "get-statements-by-id",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "BearereyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodXNzYW0iLCJhdWQiOiJjdXN0b21lciIsInN1YiI6ImFkbWluIiwianRpIjoiZGFhMjEyOGEtZWUxNy00NTJlLWIyYzItZDExN2E5Y2FkOTc3IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IlJPTEVfQURNSU4ifSx7ImF1dGhvcml0eSI6IlJPTEVfVVNFUiJ9XSwiZXhwIjoxNjg1MzAwOTQzfQ.jedUqJify59xqa1tXQFKQ3ENBWbO8tnf4BNBS3p4r64",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/tree/v1/statements/find-by-account/3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"tree",
+						"v1",
+						"statements",
+						"find-by-account",
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "login",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
-					"mode": "urlencoded",
-					"urlencoded": [
-						{
-							"key": "username",
-							"value": "admin",
-							"type": "text"
-						},
-						{
-							"key": "password",
-							"value": "admin",
-							"type": "text"
+					"mode": "raw",
+					"raw": "{\r\n    \"username\" : \"admin\" ,\r\n    \"password\" : \"admin\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
 						}
-					]
+					}
 				},
 				"url": {
 					"raw": "http://localhost:8080/tree/api/v1/secureLogin",
@@ -93,6 +108,34 @@
 						"api",
 						"v1",
 						"secureLogin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "logout",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "BearereyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodXNzYW0iLCJhdWQiOiJjdXN0b21lciIsInN1YiI6ImFkbWluIiwianRpIjoiMzc3YWE0NmItMTA2Mi00ZWJiLThlMmQtMzFiZmU0Njk4YzE2IiwiYXV0aG9yaXRpZXMiOlt7ImF1dGhvcml0eSI6IlJPTEVfQURNSU4ifSx7ImF1dGhvcml0eSI6IlJPTEVfVVNFUiJ9XSwiZXhwIjoxNjg1Mjk1MTI4fQ.loEvbmfblBZCB_TFXHsnVRhJV8zLf6w0DO_8gHQQhfE",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/tree/v1/statements/logout",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"tree",
+						"v1",
+						"statements",
+						"logout"
 					]
 				}
 			},

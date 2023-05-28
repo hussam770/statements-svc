@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JDBCStatementRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">statement-svc</a> &gt; <a href="index.source.html" class="el_package">demo.assignment.tree.statementsvc.repo</a> &gt; <span class="el_source">JDBCStatementRepository.java</span></div><h1>JDBCStatementRepository.java</h1><pre class="source lang-java linenums">package demo.assignment.tree.statementsvc.repo;
+
+import demo.assignment.tree.statementsvc.model.Statement;
+import demo.assignment.tree.statementsvc.model.mappers.StatementMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+<span class="fc" id="L13">@Slf4j</span>
+public class JDBCStatementRepository implements StatementRepository {
+
+    private static final String SEARCH_STATEMENTS_SQL = &quot;select s.account_id , s.datefield , s. ID , &quot; +
+            &quot;s.amount ,a.account_type , a.account_number &quot; +
+            &quot;from statement s,account a&quot; +
+            &quot; where int(s.account_id) = a.ID and a.ID = ? &quot;;
+
+    @Autowired
+    private final JdbcTemplate jdbcTemplate;
+
+<span class="fc" id="L24">    public JDBCStatementRepository(JdbcTemplate jdbcTemplate) {</span>
+<span class="fc" id="L25">        this.jdbcTemplate = jdbcTemplate;</span>
+<span class="fc" id="L26">    }</span>
+
+
+    @Override
+    public List&lt;Statement&gt; getStatementsBySearchCriteria(int accountId) {
+<span class="fc" id="L31">        log.info(&quot;Running query ...&quot;);</span>
+<span class="fc" id="L32">        return jdbcTemplate.query(SEARCH_STATEMENTS_SQL, new StatementMapper(), accountId);</span>
+
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

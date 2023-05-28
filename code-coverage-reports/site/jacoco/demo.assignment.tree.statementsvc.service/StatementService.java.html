@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StatementService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">statement-svc</a> &gt; <a href="index.source.html" class="el_package">demo.assignment.tree.statementsvc.service</a> &gt; <span class="el_source">StatementService.java</span></div><h1>StatementService.java</h1><pre class="source lang-java linenums">package demo.assignment.tree.statementsvc.service;
+
+import demo.assignment.tree.statementsvc.model.Statement;
+import demo.assignment.tree.statementsvc.model.StatementsSearchCriteria;
+import demo.assignment.tree.statementsvc.model.enums.SearchType;
+import demo.assignment.tree.statementsvc.repo.StatementRepository;
+import demo.assignment.tree.statementsvc.view.StatementViewDTO;
+import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+<span class="fc" id="L19">@Slf4j</span>
+public class StatementService {
+
+    private final StatementRepository statementRepository;
+
+    private final PasswordEncoder encoder ;
+
+    @Autowired
+<span class="fc" id="L27">    public StatementService(StatementRepository statementRepository, PasswordEncoder encoder) {</span>
+<span class="fc" id="L28">        this.statementRepository = statementRepository;</span>
+<span class="fc" id="L29">        this.encoder = encoder;</span>
+<span class="fc" id="L30">    }</span>
+
+    public List&lt;StatementViewDTO&gt; searchStatements(int accountId, StatementsSearchCriteria searchCriteria) {
+<span class="fc" id="L33">        log.info(&quot;searchStatements .. &quot;);</span>
+<span class="fc" id="L34">        validateSearchCriteria(searchCriteria);</span>
+<span class="fc" id="L35">        List&lt;Statement&gt; statementsList = statementRepository</span>
+<span class="fc" id="L36">                .getStatementsBySearchCriteria(accountId);</span>
+
+<span class="fc" id="L38">        return filterBySearchCriteria(statementsList, searchCriteria);</span>
+    }
+
+    public List&lt;StatementViewDTO&gt; getStatementById(int accountId) {
+
+<span class="nc" id="L43">        log.info(&quot;getStatementById .. &quot;);</span>
+<span class="nc" id="L44">        List&lt;Statement&gt; statementsList = statementRepository</span>
+<span class="nc" id="L45">                .getStatementsBySearchCriteria(accountId);</span>
+
+<span class="nc" id="L47">        ModelMapper mapper = new ModelMapper();</span>
+<span class="nc" id="L48">        return statementsList.stream()</span>
+<span class="nc" id="L49">                .map(s -&gt; {</span>
+<span class="nc" id="L50">                    StatementViewDTO statementViewDTO = mapper.map(s, StatementViewDTO.class);</span>
+<span class="nc" id="L51">                    statementViewDTO.setHashedAccountNumber(encoder.encode(s.getAccountNumber()));</span>
+<span class="nc" id="L52">                    return statementViewDTO ;</span>
+<span class="nc" id="L53">                }).collect(Collectors.toList());</span>
+    }
+
+    private void validateSearchCriteria(StatementsSearchCriteria searchCriteria) {
+        // validate user input - conflict
+<span class="pc bpc" id="L58" title="1 of 4 branches missed.">        if ((searchCriteria.getFromDate() != null &amp;&amp; searchCriteria.getToDate() == null)</span>
+<span class="pc bpc" id="L59" title="1 of 4 branches missed.">                || searchCriteria.getFromDate() == null &amp;&amp; searchCriteria.getToDate() != null)</span>
+<span class="nc" id="L60">            throw new IllegalArgumentException(&quot;Missing params, could not perform search with current search criteria..&quot;);</span>
+
+<span class="pc bpc" id="L62" title="1 of 4 branches missed.">        if ((searchCriteria.getFromAmount() != null &amp;&amp; searchCriteria.getToAmount() == null)</span>
+<span class="pc bpc" id="L63" title="1 of 4 branches missed.">                || searchCriteria.getFromAmount() == null &amp;&amp; searchCriteria.getToAmount() != null)</span>
+<span class="nc" id="L64">            throw new IllegalArgumentException(&quot;Missing params, could not perform search with current search criteria ..&quot;);</span>
+
+<span class="pc bpc" id="L66" title="1 of 4 branches missed.">        if ((searchCriteria.getFromDate() != null &amp;&amp; searchCriteria.getFromDate().isAfter(searchCriteria.getToDate())))</span>
+<span class="nc" id="L67">            throw new IllegalArgumentException(&quot;The from date param could not be after the to date ..&quot;);</span>
+
+<span class="pc bpc" id="L69" title="1 of 4 branches missed.">        if ((searchCriteria.getFromAmount() != null &amp;&amp; searchCriteria.getFromAmount() &gt; searchCriteria.getToAmount()))</span>
+<span class="nc" id="L70">            throw new IllegalArgumentException(&quot;The from amount param could not be larger than to amount .. &quot;);</span>
+<span class="fc" id="L71">    }</span>
+
+    private List&lt;StatementViewDTO&gt; filterBySearchCriteria(List&lt;Statement&gt; statementList
+            , StatementsSearchCriteria searchCriteria) {
+<span class="fc" id="L75">        ModelMapper mapper = new ModelMapper();</span>
+<span class="fc" id="L76">        final var searchType = defineSearchCriteria(searchCriteria);</span>
+<span class="fc" id="L77">        return statementList.stream()</span>
+<span class="fc" id="L78">                .filter(s -&gt; this.filterBySearchCriteria(s, searchCriteria, searchType))</span>
+<span class="fc" id="L79">                .map(s -&gt; {</span>
+<span class="fc" id="L80">                    final var statementViewDTO = mapper.map(s, StatementViewDTO.class);</span>
+<span class="fc" id="L81">                    statementViewDTO.setHashedAccountNumber(encoder.encode(s.getAccountNumber()));</span>
+<span class="fc" id="L82">                    return statementViewDTO ;</span>
+                })
+<span class="fc" id="L84">                .collect(Collectors.toList());</span>
+    }
+
+    private boolean filterBySearchCriteria(Statement item, StatementsSearchCriteria searchCriteria, SearchType searchType) {
+<span class="pc bpc" id="L88" title="1 of 5 branches missed.">        switch (searchType) {</span>
+            case ACCOUNT_ONLY:
+<span class="fc" id="L90">                return (item.getDate().isAfter(LocalDate.now().minusMonths(3)));</span>
+            case AMOUNT_DATE:
+<span class="fc bfc" id="L92" title="All 2 branches covered.">                return (item.getDate().isAfter(searchCriteria.getFromDate())</span>
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">                        &amp;&amp; (item.getDate().isBefore(searchCriteria.getToDate())))</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">                        &amp;&amp; (item.getAmount() &gt; searchCriteria.getFromAmount())</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">                        &amp;&amp; (item.getAmount() &lt; searchCriteria.getToAmount());</span>
+
+            case DATE:
+<span class="fc bfc" id="L98" title="All 2 branches covered.">                return (item.getDate().isAfter(searchCriteria.getFromDate())</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">                        &amp;&amp; (item.getDate().isBefore(searchCriteria.getToDate())));</span>
+
+            case AMOUNT:
+<span class="fc bfc" id="L102" title="All 2 branches covered.">                return (item.getAmount() &gt; searchCriteria.getFromAmount())</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">                        &amp;&amp; (item.getAmount() &lt; searchCriteria.getToAmount());</span>
+        }
+<span class="nc" id="L105">        throw new IllegalArgumentException(&quot;Something went wrong, please try later ..&quot;);</span>
+    }
+
+    private SearchType defineSearchCriteria(StatementsSearchCriteria statementsSearchCriteria) {
+
+<span class="fc bfc" id="L110" title="All 4 branches covered.">        if (statementsSearchCriteria.getFromDate() == null &amp;&amp; statementsSearchCriteria.getFromAmount() == null)</span>
+<span class="fc" id="L111">            return SearchType.ACCOUNT_ONLY;</span>
+<span class="fc bfc" id="L112" title="All 4 branches covered.">        else if (statementsSearchCriteria.getFromDate() != null &amp;&amp; statementsSearchCriteria.getFromAmount() != null)</span>
+<span class="fc" id="L113">            return SearchType.AMOUNT_DATE;</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">        else if (statementsSearchCriteria.getFromDate() != null)</span>
+<span class="fc" id="L115">            return SearchType.DATE;</span>
+<span class="fc" id="L116">        else return SearchType.AMOUNT;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

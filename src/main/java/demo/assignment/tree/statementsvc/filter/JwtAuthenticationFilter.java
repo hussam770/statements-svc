@@ -3,12 +3,15 @@ package demo.assignment.tree.statementsvc.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import demo.assignment.tree.statementsvc.model.JwtTokenUtilConfiguration;
 import demo.assignment.tree.statementsvc.model.UserNamePasswordAuthenticationRequest;
+import demo.assignment.tree.statementsvc.service.UserManagementService;
 import io.jsonwebtoken.Jwts;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,14 +19,17 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
 
+
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager ;
     private final JwtTokenUtilConfiguration jwtConfig ;
+    private final UserManagementService userManagementService ;
 
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager , JwtTokenUtilConfiguration jwtConfig ) {
+    public JwtAuthenticationFilter(AuthenticationManager authenticationManager , JwtTokenUtilConfiguration jwtConfig, UserManagementService userManagementService) {
         super();
         this.authenticationManager = authenticationManager;
         this.jwtConfig = jwtConfig ;
+        this.userManagementService = userManagementService;
         setFilterProcessesUrl("/api/v1/secureLogin");
     }
 
@@ -45,6 +51,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String tokenPrefix = "Bearer";
 
         response.setHeader("Authorization", tokenPrefix.concat(token));
+        userManagementService.saveUserToken(token);
 
     }
 

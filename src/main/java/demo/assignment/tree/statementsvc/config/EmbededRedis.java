@@ -17,7 +17,11 @@ public class EmbededRedis {
 
     @PostConstruct
     public void startRedis() throws IOException {
-        redisServer = new RedisServer(redisPort);
+
+        redisServer = RedisServer.builder()
+                .port(redisPort)
+                .setting("maxmemory 128M").build();
+
         redisServer.start();
     }
 

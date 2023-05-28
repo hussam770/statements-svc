@@ -9,7 +9,6 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -34,9 +33,6 @@ public class UserManagementService {
         this.userRepository = userRepository;
     }
     public void saveUserToken(String token){
-        // validate token
-        // if token is not valid throw Exception
-        // save/update token into redis per user
 
         Jws<Claims> jwtClaims = Jwts.parserBuilder()
                 .setSigningKey(jwtConfig.getSecretKey())
@@ -45,12 +41,9 @@ public class UserManagementService {
 
         String username = jwtClaims.getBody().getSubject();
 
-        validateToken(token);
-        User savedUser = userRepository.findById(username).get();
-        if(savedUser != null){
-            if(validateToken(savedUser.getToken()))// if user
-                throw new IllegalStateException("User already logged in .. ");
-
+        final var optionalUser = userRepository.findById(username);
+        if(optionalUser.isPresent()){
+            throw new IllegalStateException("user is already logged in ..");
         }
 
 
@@ -69,15 +62,15 @@ public class UserManagementService {
                 .build()
                 .parseClaimsJws(token);
 
+        if(!validateToken(token)){
+            throw new IllegalStateException("session already expired .. ");
+        }
+
         String username = jwtClaims.getBody().getSubject();
         userRepository.deleteById(username);
 
     }
 
-    @Cacheable(value = "userToken" , key = "#username")
-    private String getToken(String username , String token){
-        return null ;
-    }
 
     public boolean validateToken(String token){
 
@@ -89,6 +82,11 @@ public class UserManagementService {
                     .parseClaimsJws(token);
 
             String username = jwtClaims.getBody().getSubject();
+            final var dbUser = userRepository.findById(username)
+                    .orElseThrow(() ->  new IllegalStateException("user is not logged in before .."));
+
+            final var dbUserToken = dbUser.getToken();
+
             if(!jwtClaims.getBody().getAudience().equals(jwtConfig.getAudiance()) || !jwtClaims.getBody().getIssuer().equals(jwtConfig.getIssuer()))
                 throw new IllegalStateException("Token cannot be trusted ");
 

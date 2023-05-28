@@ -13,4 +13,6 @@ public class Statement {
     private Double accountId;
     private LocalDate date;
     private Double amount;
+    private String accountType;
+    private String accountNumber;
 }

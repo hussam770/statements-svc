@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserManagementService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">statement-svc</a> &gt; <a href="index.source.html" class="el_package">demo.assignment.tree.statementsvc.service</a> &gt; <span class="el_source">UserManagementService.java</span></div><h1>UserManagementService.java</h1><pre class="source lang-java linenums">package demo.assignment.tree.statementsvc.service;
+
+import demo.assignment.tree.statementsvc.model.JwtTokenUtilConfiguration;
+import demo.assignment.tree.statementsvc.model.User;
+import demo.assignment.tree.statementsvc.repo.UserRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+<span class="fc" id="L24">@Slf4j</span>
+@Service
+public class UserManagementService {
+
+    private final JwtTokenUtilConfiguration jwtConfig ;
+    private final UserRepository userRepository ;
+
+    @Autowired
+    public UserManagementService(JwtTokenUtilConfiguration jwtConfig, UserRepository userRepository) {
+<span class="fc" id="L33">        super();</span>
+<span class="fc" id="L34">        this.jwtConfig = jwtConfig;</span>
+<span class="fc" id="L35">        this.userRepository = userRepository;</span>
+<span class="fc" id="L36">    }</span>
+    public void saveUserToken(String token){
+
+<span class="nc" id="L39">        Jws&lt;Claims&gt; jwtClaims = Jwts.parserBuilder()</span>
+<span class="nc" id="L40">                .setSigningKey(jwtConfig.getSecretKey())</span>
+<span class="nc" id="L41">                .build()</span>
+<span class="nc" id="L42">                .parseClaimsJws(token);</span>
+
+<span class="nc" id="L44">        String username = jwtClaims.getBody().getSubject();</span>
+
+<span class="nc" id="L46">        final var optionalUser = userRepository.findById(username);</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">        if(optionalUser.isPresent()){</span>
+<span class="nc" id="L48">            throw new IllegalStateException(&quot;user is already logged in ..&quot;);</span>
+        }
+
+
+<span class="nc" id="L52">        User user = User.builder()</span>
+<span class="nc" id="L53">                .setUsername(username)</span>
+<span class="nc" id="L54">                .setToken(token)</span>
+<span class="nc" id="L55">                .build();</span>
+<span class="nc" id="L56">        userRepository.save(user);</span>
+<span class="nc" id="L57">    }</span>
+
+    public void logoutUser(String token){
+        // remove from redis cache
+
+<span class="nc" id="L62">        Jws&lt;Claims&gt; jwtClaims = Jwts.parserBuilder()</span>
+<span class="nc" id="L63">                .setSigningKey(jwtConfig.getSecretKey())</span>
+<span class="nc" id="L64">                .build()</span>
+<span class="nc" id="L65">                .parseClaimsJws(token);</span>
+
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if(!validateToken(token)){</span>
+<span class="nc" id="L68">            throw new IllegalStateException(&quot;session already expired .. &quot;);</span>
+        }
+
+<span class="nc" id="L71">        String username = jwtClaims.getBody().getSubject();</span>
+<span class="nc" id="L72">        userRepository.deleteById(username);</span>
+
+<span class="nc" id="L74">    }</span>
+
+
+    public boolean validateToken(String token){
+
+        try {
+
+<span class="nc" id="L81">            Jws&lt;Claims&gt; jwtClaims = Jwts.parserBuilder()</span>
+<span class="nc" id="L82">                    .setSigningKey(jwtConfig.getSecretKey())</span>
+<span class="nc" id="L83">                    .build()</span>
+<span class="nc" id="L84">                    .parseClaimsJws(token);</span>
+
+<span class="nc" id="L86">            String username = jwtClaims.getBody().getSubject();</span>
+<span class="nc" id="L87">            final var dbUser = userRepository.findById(username)</span>
+<span class="nc" id="L88">                    .orElseThrow(() -&gt;  new IllegalStateException(&quot;user is not logged in before ..&quot;));</span>
+
+<span class="nc" id="L90">            final var dbUserToken = dbUser.getToken();</span>
+
+<span class="nc bnc" id="L92" title="All 4 branches missed.">            if(!jwtClaims.getBody().getAudience().equals(jwtConfig.getAudiance()) || !jwtClaims.getBody().getIssuer().equals(jwtConfig.getIssuer()))</span>
+<span class="nc" id="L93">                throw new IllegalStateException(&quot;Token cannot be trusted &quot;);</span>
+
+<span class="nc" id="L95">            var grantedAuths = (List&lt;Map&lt;String , String&gt;&gt;)jwtClaims.getBody().get(&quot;authorities&quot;);</span>
+
+<span class="nc" id="L97">            Set&lt;SimpleGrantedAuthority&gt; authoritiesSet = grantedAuths.stream()</span>
+<span class="nc" id="L98">                    .map(m -&gt; new SimpleGrantedAuthority(m.get(&quot;authority&quot;)))</span>
+<span class="nc" id="L99">                    .collect(Collectors.toSet());</span>
+
+            // we have to map the authorities to the set of SimpleGrantedAuthorities
+<span class="nc" id="L102">            Authentication auth = new UsernamePasswordAuthenticationToken(</span>
+                    username,
+                    null ,
+                    authoritiesSet);
+
+
+<span class="nc" id="L108">            SecurityContextHolder.getContext().setAuthentication(auth);</span>
+
+        }
+<span class="nc" id="L111">        catch(JwtException e) {</span>
+<span class="nc" id="L112">            log.error(&quot;JwtException: Token cannot be trusted&quot; , e);</span>
+<span class="nc" id="L113">            throw new IllegalStateException(&quot;Token cannot be trusted &quot;);</span>
+        }
+<span class="nc" id="L115">        catch(Exception e) {</span>
+<span class="nc" id="L116">            log.error(&quot;Exception: Token cannot be trusted&quot; , e);</span>
+<span class="nc" id="L117">            throw new IllegalStateException(&quot;Token cannot be trusted &quot;);</span>
+<span class="nc" id="L118">        }</span>
+
+<span class="nc" id="L120">        return true ;</span>
+
+    }
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

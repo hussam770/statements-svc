@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StatementController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">statement-svc</a> &gt; <a href="index.source.html" class="el_package">demo.assignment.tree.statementsvc.controller</a> &gt; <span class="el_source">StatementController.java</span></div><h1>StatementController.java</h1><pre class="source lang-java linenums">package demo.assignment.tree.statementsvc.controller;
+
+
+import demo.assignment.tree.statementsvc.model.StatementsSearchCriteria;
+import demo.assignment.tree.statementsvc.service.StatementService;
+import demo.assignment.tree.statementsvc.view.StatementViewDTO;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
+
+<span class="fc" id="L15">@Slf4j</span>
+@RestController
+@RequestMapping(value = &quot;v1/statements&quot;)
+public class StatementController {
+
+    private final StatementService statementService;
+
+<span class="fc" id="L22">    public StatementController(StatementService statementService) {</span>
+<span class="fc" id="L23">        this.statementService = statementService;</span>
+<span class="fc" id="L24">    }</span>
+
+    @GetMapping(&quot;find/{account-id}&quot;)
+    public ResponseEntity&lt;List&lt;StatementViewDTO&gt;&gt; getStatement(@PathVariable(&quot;account-id&quot;) int accountId,
+                                                               @RequestParam(value = &quot;fromDate&quot;, required = false)
+                                                        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+                                                               @RequestParam(value = &quot;toDate&quot;, required = false)
+                                                        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+                                                               @RequestParam(value = &quot;fromAmount&quot;, required = false) Double fromAmount,
+                                                               @RequestParam(value = &quot;toAmount&quot;, required = false) Double toAmount) {
+
+<span class="nc" id="L35">        log.info(&quot;getStatement ..&quot;);</span>
+
+<span class="nc" id="L37">        StatementsSearchCriteria statementsSearchCriteria = StatementsSearchCriteria.builder().</span>
+<span class="nc" id="L38">                setFromDate(fromDate).</span>
+<span class="nc" id="L39">                setToDate(toDate).</span>
+<span class="nc" id="L40">                setFromAmount(fromAmount).</span>
+<span class="nc" id="L41">                setToAmount(toAmount).</span>
+<span class="nc" id="L42">                build();</span>
+
+
+<span class="nc" id="L45">        final var statementList = statementService.searchStatements(accountId, statementsSearchCriteria);</span>
+<span class="nc" id="L46">        return ResponseEntity.ok(statementList);</span>
+    }
+
+    @GetMapping(&quot;find-by-account/{account-id}&quot;)
+    public ResponseEntity&lt;List&lt;StatementViewDTO&gt;&gt; getStatementByAccountId(@PathVariable(&quot;account-id&quot;) int accountId) {
+<span class="nc" id="L51">        log.info(&quot;getStatementByAccountId ..&quot;);</span>
+<span class="nc" id="L52">        final var statementList = statementService.getStatementById(accountId);</span>
+<span class="nc" id="L53">        return ResponseEntity.ok(statementList);</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

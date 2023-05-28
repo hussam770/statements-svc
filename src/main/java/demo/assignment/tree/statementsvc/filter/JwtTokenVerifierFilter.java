@@ -39,9 +39,8 @@ public class JwtTokenVerifierFilter extends OncePerRequestFilter {
             return ;
         }
 
-        String token = authHeader.substring(tokenPrefix.length(), authHeader.length());
+        String token = authHeader.substring(tokenPrefix.length());
         userManagementService.validateToken(token);
-        userManagementService.saveUserToken(token);
         filterChain.doFilter(request, response);
 
     }

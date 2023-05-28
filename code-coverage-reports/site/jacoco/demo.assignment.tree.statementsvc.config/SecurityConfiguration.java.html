@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">statement-svc</a> &gt; <a href="index.source.html" class="el_package">demo.assignment.tree.statementsvc.config</a> &gt; <span class="el_source">SecurityConfiguration.java</span></div><h1>SecurityConfiguration.java</h1><pre class="source lang-java linenums">package demo.assignment.tree.statementsvc.config;
+
+import demo.assignment.tree.statementsvc.filter.JwtAuthenticationFilter;
+import demo.assignment.tree.statementsvc.filter.JwtTokenVerifierFilter;
+import demo.assignment.tree.statementsvc.model.JwtTokenUtilConfiguration;
+import demo.assignment.tree.statementsvc.service.UserManagementService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+    @Autowired
+    private final JwtTokenUtilConfiguration jwtConfig ;
+    @Autowired
+    private final UserManagementService userManagementService ;
+    @Autowired final DBUsersProperties dbUsersProperties ;
+
+<span class="fc" id="L31">    public SecurityConfiguration(JwtTokenUtilConfiguration jwtConfig, UserManagementService userManagementService, DBUsersProperties dbUsersProperties) {</span>
+<span class="fc" id="L32">        this.jwtConfig = jwtConfig;</span>
+<span class="fc" id="L33">        this.userManagementService = userManagementService;</span>
+<span class="fc" id="L34">        this.dbUsersProperties = dbUsersProperties;</span>
+<span class="fc" id="L35">    }</span>
+
+
+    @Override
+    @Bean
+    protected UserDetailsService userDetailsService() {
+<span class="fc" id="L41">        UserDetails user = User.withUsername(dbUsersProperties.getUserUsername())</span>
+<span class="fc" id="L42">                .password(getPasswordEncoder().encode(dbUsersProperties.getUserPassword()))</span>
+<span class="fc" id="L43">                .roles(&quot;USER&quot;)</span>
+<span class="fc" id="L44">                .build();</span>
+
+<span class="fc" id="L46">        UserDetails admin = User.withUsername(dbUsersProperties.getAdminUsername())</span>
+<span class="fc" id="L47">                .password(getPasswordEncoder().encode(dbUsersProperties.getAdminPassword()))</span>
+<span class="fc" id="L48">                .roles(&quot;USER&quot;, &quot;ADMIN&quot;)</span>
+<span class="fc" id="L49">                .build();</span>
+
+<span class="fc" id="L51">        return new InMemoryUserDetailsManager(</span>
+                user, admin);
+    }
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+<span class="fc" id="L57">        http.headers().frameOptions().disable();</span>
+<span class="fc" id="L58">        http.csrf().disable()</span>
+<span class="fc" id="L59">                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)</span>
+<span class="fc" id="L60">                .and()</span>
+<span class="fc" id="L61">                .addFilter(new JwtAuthenticationFilter(authenticationManager() , jwtConfig, userManagementService))</span>
+<span class="fc" id="L62">                .addFilterAfter(new JwtTokenVerifierFilter(jwtConfig, userManagementService) ,JwtAuthenticationFilter.class )</span>
+<span class="fc" id="L63">                .authorizeRequests()</span>
+<span class="fc" id="L64">                .antMatchers(&quot;/v1/statements/find/*&quot;).hasRole(&quot;ADMIN&quot;)</span>
+<span class="fc" id="L65">                .anyRequest()</span>
+<span class="fc" id="L66">                .authenticated();</span>
+<span class="fc" id="L67">    }</span>
+
+    @Bean
+    public PasswordEncoder getPasswordEncoder() {
+<span class="fc" id="L71">        return new BCryptPasswordEncoder() ;</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -20,6 +20,8 @@ public class StatementMapper implements RowMapper<Statement> {
         return new Statement(rs.getInt("id"),
                 rs.getDouble("account_id"),
                 localDate,
-                Double.parseDouble(rs.getString("amount")));
+                Double.parseDouble(rs.getString("amount")),
+                rs.getString("account_type"),
+                rs.getString("account_number"));
     }
 }
