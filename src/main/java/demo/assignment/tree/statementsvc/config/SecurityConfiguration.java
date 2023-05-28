@@ -3,6 +3,7 @@ package demo.assignment.tree.statementsvc.config;
 import demo.assignment.tree.statementsvc.filter.JwtAuthenticationFilter;
 import demo.assignment.tree.statementsvc.filter.JwtTokenVerifierFilter;
 import demo.assignment.tree.statementsvc.model.JwtTokenUtilConfiguration;
+import demo.assignment.tree.statementsvc.service.UserManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,11 +24,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private final JwtTokenUtilConfiguration jwtConfig ;
-
+    @Autowired
+    private final UserManagementService userManagementService ;
     @Autowired final DBUsersProperties dbUsersProperties ;
 
-    public SecurityConfiguration(JwtTokenUtilConfiguration jwtConfig, DBUsersProperties dbUsersProperties) {
+    public SecurityConfiguration(JwtTokenUtilConfiguration jwtConfig, UserManagementService userManagementService, DBUsersProperties dbUsersProperties) {
         this.jwtConfig = jwtConfig;
+        this.userManagementService = userManagementService;
         this.dbUsersProperties = dbUsersProperties;
     }
 
@@ -56,7 +59,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .addFilter(new JwtAuthenticationFilter(authenticationManager() , jwtConfig))
-                .addFilterAfter(new JwtTokenVerifierFilter(jwtConfig) ,JwtAuthenticationFilter.class )
+                .addFilterAfter(new JwtTokenVerifierFilter(jwtConfig, userManagementService) ,JwtAuthenticationFilter.class )
                 .authorizeRequests()
                 .anyRequest()
                 .authenticated();
